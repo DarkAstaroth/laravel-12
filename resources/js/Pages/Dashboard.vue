@@ -21,37 +21,38 @@ async function sendPost() {
     responseText.value = '';
     error.value = '';
     loading.value = true;
-    let parsedBody;
+
+    // Validar JSON del body antes de enviarlo al backend
     try {
-        parsedBody = JSON.parse(bodyJson.value);
+        JSON.parse(bodyJson.value);
     } catch (e: any) {
         error.value = 'Body JSON inválido: ' + e.message;
         loading.value = false;
         return;
     }
-    // Construimos las cabeceras
-    let fetchHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-    };
-    if (token.value.trim()) {
-        fetchHeaders['Authorization'] = `Bearer ${token.value.trim()}`;
-    }
-    headers.forEach((h) => {
-        if (h.key && h.value) fetchHeaders[h.key] = h.value;
-    });
 
     try {
-        const res = await fetch(url.value, {
+        const res = await fetch('/api/simulate-post', {
             method: 'POST',
-            headers: fetchHeaders,
-            body: JSON.stringify(parsedBody),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: url.value,
+                token: token.value.trim() || null,
+                body: bodyJson.value,
+                headers: headers.filter((h) => h.key && h.value),
+            }),
         });
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-            const data = await res.json();
+
+        const data = await res.json();
+
+        if (res.ok) {
+            // Mostrar respuesta formateada
             responseText.value = JSON.stringify(data, null, 2);
         } else {
-            responseText.value = await res.text();
+            // Mostrar error recibido del backend
+            error.value = data.error || 'Error en la solicitud';
         }
     } catch (e: any) {
         error.value = 'Error en la solicitud: ' + e.message;

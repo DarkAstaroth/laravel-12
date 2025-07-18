@@ -9,7 +9,9 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__ . '/../routes/web.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
+        api: __DIR__ . '/../routes/api.php',   // Aquí defines el archivo de rutas 
     )
+
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
@@ -18,12 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         //
     })
-    ->withMiddleware(function (Middleware $middleware) {
-        // Register native CORS middleware in Laravel 12
-        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
 
-        // You can add other global middleware here
-    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
